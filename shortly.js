@@ -28,6 +28,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 
+// ROUTERS
 app.get('/',
 function(req, res) {
   res.render('index');
@@ -92,40 +93,58 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
-function restrict(req, res, next) {
-  if (req.session.user) {
-    next();
-  } else {
-    req.session.error = 'Access denied!';
-    res.redirect('/login');
-  }
-}
+
+app.post('/signup', function(request, response) {
+  var user = new User({
+    username: request.body.username,
+    password: request.body.password
+  }).save().then(function(newUser) {
+    Users.add(newUser);
+    console.log(newUser);
+    response.send(200, newUser);
+  });
+});
 
 app.post('/login', function(request, response) {
-    console.log('request.body:', request.body)
-    var username = request.body.username;
-    var password = request.body.password;
-    console.log('username:', username, 'password:', password)
-    if(username == 'demo' && password == 'demo'){
-        // request.session.regenerate(function(){
-        // request.session.user = username;
-        // response.redirect('/restricted');
-        // });
+  var user = new User({
+    username: request.body.username,
+    password: request.body.password
+  }).fetch().then(function(found) {
+    if (found) {
+      response.send(200, found.attributes);
+    } else {
+      response.redirect('login');
     }
-    else {
-       res.redirect('login');
-    }
+  });
 });
 
-app.get('/logout', function(request, response){
-    request.session.destroy(function(){
-        response.redirect('/');
-    });
-});
+    // if(username == 'demo' && password == 'demo'){
+    //     // request.session.regenerate(function(){
+    //     // request.session.user = username;
+    //     // response.redirect('/restricted');
+    //     // });
+    // }
 
-app.get('/restricted', restrict, function(request, response){
-  response.send('This is the restricted area! Hello ' + request.session.user + '! click <a href="/logout">here to logout</a>');
-});
+// function restrict(req, res, next) {
+//   if (req.session.user) {
+//     next();
+//   } else {
+//     req.session.error = 'Access denied!';
+//     res.redirect('/login');
+//   }
+// }
+
+
+
+// app.get('/logout', function(request, response){
+//     request.session.destroy(function(){
+//         response.redirect('/');
+//     });
+// });
+
+// app.get('/restricted', restrict, function(request, response){
+//   response.send('This is the restricted area! Hello ' + request.session.user + '! click <a href="/logout">here to logout</a>');
+// });
 
 
 
