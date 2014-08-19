@@ -19,28 +19,43 @@ app.use(partials());
 // Parse JSON (uniform resource locators)
 app.use(bodyParser.json());
 // Parse forms (signup/login)
+
+// DO WE NEED THESE BELOW?
+// app.use(express.cookieParser('shhhh, very secret'));
+// app.use(express.session());
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 
-app.get('/', 
+app.get('/',
 function(req, res) {
   res.render('index');
 });
 
-app.get('/create', 
+app.get('/create',
 function(req, res) {
   res.render('index');
 });
 
-app.get('/links', 
+app.get('/links',
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
   });
 });
 
-app.post('/links', 
+app.get('/login',
+function(req, res) {
+  res.render('login');
+});
+
+app.get('/signup',
+function(req, res) {
+  res.render('signup');
+});
+
+app.post('/links',
 function(req, res) {
   var uri = req.body.url;
 
@@ -77,6 +92,40 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+function restrict(req, res, next) {
+  if (req.session.user) {
+    next();
+  } else {
+    req.session.error = 'Access denied!';
+    res.redirect('/login');
+  }
+}
+
+app.post('/login', function(request, response) {
+    console.log('request.body:', request.body)
+    var username = request.body.username;
+    var password = request.body.password;
+    console.log('username:', username, 'password:', password)
+    if(username == 'demo' && password == 'demo'){
+        // request.session.regenerate(function(){
+        // request.session.user = username;
+        // response.redirect('/restricted');
+        // });
+    }
+    else {
+       res.redirect('login');
+    }
+});
+
+app.get('/logout', function(request, response){
+    request.session.destroy(function(){
+        response.redirect('/');
+    });
+});
+
+app.get('/restricted', restrict, function(request, response){
+  response.send('This is the restricted area! Hello ' + request.session.user + '! click <a href="/logout">here to logout</a>');
+});
 
 
 

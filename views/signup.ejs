@@ -1,3 +1,15 @@
+<!-- Do we actually need this?  Seems like duplicating code. -->
+<script id='layout' type='text/x-handlebars-template'>
+  <div class='navigation'>
+  <ul>
+    <li><a href='#' class='index'>All Links</a></li>
+    <li><a href='#' class='create'>Shorten</a></li>
+  </ul>
+  </div>
+  <div id='container'></div>
+</script>
+
+<script id='signup' type='text/x-handlebars-template'>
 <h2>Sign up</h2>
 <form action="/signup" method="post">
     <div>
@@ -15,3 +27,26 @@
 <p>
   <a href="/login">Login to your account &rarr;</a>
 <p>
+</script>
+
+<!-- Do we actually need this?  Seems like duplicating code. -->
+<script>
+  $(function(){
+    new Shortly();
+  });
+
+  window.Templates = {};
+  $('[type="text/x-handlebars-template"]').each(function(index, div){
+    Templates[div.id] = Handlebars.compile(div.innerHTML);
+  });
+</script>
+
+<script src='/client/app.js'></script>
+<!-- <script src='/client/link.js'></script>
+<script src='/client/links.js'></script>
+<script src='/client/linkView.js'></script>
+<script src='/client/linksView.js'></script>
+<script src='/client/createLinkView.js'></script> -->
+<script src='/client/router.js'></script>
+<!-- <script src='/client/loginView.js'></script> -->
+<script src='/client/signupView.js'></script>
