@@ -2,6 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var session = require('express-session');
 
 
 var db = require('./app/config');
@@ -22,7 +23,10 @@ app.use(bodyParser.json());
 
 // DO WE NEED THESE BELOW?
 // app.use(express.cookieParser('shhhh, very secret'));
-// app.use(express.session());
+app.use(session({
+  secret: 'tyron',
+  cookie: { maxAge: 10000 }
+}));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
@@ -111,40 +115,39 @@ app.post('/login', function(request, response) {
     password: request.body.password
   }).fetch().then(function(found) {
     if (found) {
-      response.send(200, found.attributes);
+        request.session.regenerate(function(){
+        request.session.user = found.attributes.username;
+        console.log(request.session);
+        response.redirect('/restricted');
+        });
+      // response.send(200, found.attributes);
     } else {
       response.redirect('login');
     }
   });
 });
 
-    // if(username == 'demo' && password == 'demo'){
-    //     // request.session.regenerate(function(){
-    //     // request.session.user = username;
-    //     // response.redirect('/restricted');
-    //     // });
-    // }
 
-// function restrict(req, res, next) {
-//   if (req.session.user) {
-//     next();
-//   } else {
-//     req.session.error = 'Access denied!';
-//     res.redirect('/login');
-//   }
-// }
+function restrict(req, res, next) {
+  if (req.session.user) {
+    next();
+  } else {
+    req.session.error = 'Access denied!';
+    res.redirect('/login');
+  }
+}
 
 
 
-// app.get('/logout', function(request, response){
-//     request.session.destroy(function(){
-//         response.redirect('/');
-//     });
-// });
+app.get('/logout', function(request, response){
+    request.session.destroy(function(){
+        response.redirect('/');
+    });
+});
 
-// app.get('/restricted', restrict, function(request, response){
-//   response.send('This is the restricted area! Hello ' + request.session.user + '! click <a href="/logout">here to logout</a>');
-// });
+app.get('/restricted', restrict, function(request, response){
+  response.send('This is the restricted area! Hello ' + request.session.user + '! click <a href="/logout">here to logout</a>');
+});
 
 
 
